@@ -1,0 +1,1782 @@
+```html
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ROLEPLAYER — iOS 18 Roleplay Social Network</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        ios: {
+                            blue: '#007AFF',
+                            blueDark: '#0A84FF',
+                            bgLight: '#F2F2F7',
+                            bgDark: '#000000',
+                            surfaceLight: '#FFFFFF',
+                            surfaceDark: '#121214',
+                            elevatedDark: '#1C1C1E',
+                            gray: '#8E8E93',
+                            green: '#30D158',
+                            pink: '#FF375F',
+                            purple: '#BF5AF2',
+                            gold: '#FFD60A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Hairline borders ala iOS */
+        .hairline-b {
+            border-bottom: 0.5px solid rgba(142, 142, 147, 0.25);
+        }
+        .hairline-t {
+            border-top: 0.5px solid rgba(142, 142, 147, 0.25);
+        }
+        .hairline-all {
+            border: 0.5px solid rgba(142, 142, 147, 0.25);
+        }
+        /* Frosted Glass iOS */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+        }
+        .dark .glass-header {
+            background: rgba(10, 10, 12, 0.78);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+        }
+        /* Gradient Ring untuk RP Stories */
+        .story-ring-ic {
+            background: linear-gradient(135deg, #FF375F 0%, #BF5AF2 50%, #0A84FF 100%);
+        }
+        .story-ring-plot {
+            background: linear-gradient(135deg, #FFD60A 0%, #FF9F0A 100%);
+        }
+        /* Animasi Spring Bottom Sheet */
+        @keyframes sheetSlideUp {
+            from { transform: translateY(100%); opacity: 0.5; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-sheet {
+            animation: sheetSlideUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        /* Animasi Heart Burst */
+        @keyframes heartBurst {
+            0% { transform: scale(1); }
+            35% { transform: scale(1.4); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+        .animate-heart {
+            animation: heartBurst 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        /* iMessage Bubbles */
+        .imsg-sent {
+            border-radius: 20px 20px 4px 20px;
+        }
+        .imsg-received {
+            border-radius: 20px 20px 20px 4px;
+        }
+        /* Typing Indicator Dots */
+        @keyframes typingDot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
+        .dot-1 { animation: typingDot 1.2s infinite 0s; }
+        .dot-2 { animation: typingDot 1.2s infinite 0.2s; }
+        .dot-3 { animation: typingDot 1.2s infinite 0.4s; }
+    </style>
+</head>
+<body class="bg-neutral-950 text-slate-900 dark:text-white font-sans antialiased flex items-center justify-center min-h-screen sm:py-4 selection:bg-ios-blue selection:text-white">
+
+    <!-- Background Ambient Glow di Desktop -->
+    <div class="hidden sm:block fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute -top-24 left-1/3 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 right-1/3 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px]"></div>
+    </div>
+
+    <!-- iPhone 16 Pro Frame -->
+    <div id="phone-shell" class="relative w-full sm:w-[412px] h-[100dvh] sm:h-[852px] bg-ios-bgLight dark:bg-ios-bgDark sm:rounded-[52px] sm:border-[11px] sm:border-neutral-800/90 sm:shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_30px_80px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col justify-between transition-colors duration-300">
+
+        <!-- ==================== iOS STATUS BAR & DYNAMIC ISLAND ==================== -->
+        <div class="shrink-0 z-30 glass-header pt-2.5 pb-1.5 px-7 flex items-center justify-between text-[12px] font-semibold tracking-tight select-none">
+            <span id="status-time" class="w-12">9:41</span>
+            
+            <!-- Dynamic Island -->
+            <div class="w-[104px] h-[27px] bg-black rounded-full flex items-center justify-between px-2.5 shadow-inner border border-white/5">
+                <span class="w-2 h-2 rounded-full bg-ios-green animate-pulse"></span>
+                <span class="text-[10px] font-bold tracking-wider text-white/90">ROLEPLAYER</span>
+                <div class="w-2.5 h-2.5 rounded-full bg-neutral-900 border border-neutral-700"></div>
+            </div>
+
+            <div class="flex items-center gap-1.5 w-12 justify-end">
+                <span class="text-[10px] font-bold">5G</span>
+                <div class="w-[22px] h-[11px] rounded-[3.5px] border border-current/50 p-[1.5px] flex items-center">
+                    <div class="w-full h-full bg-current rounded-[1.5px]"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TOP NAVIGATION HEADER ==================== -->
+        <header id="main-header" class="shrink-0 z-20 glass-header hairline-b px-4 py-2.5 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-1.5">
+                <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-600 to-blue-500 flex items-center justify-center shadow-sm">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                </div>
+                <span class="font-extrabold text-[17px] tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
+                    ROLEPLAYER
+                </span>
+            </div>
+
+            <!-- Active Muse Switcher Pill -->
+            <button onclick="openMuseSheet()" class="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-200/80 dark:bg-ios-elevatedDark hairline-all hover:opacity-85 active:scale-95 transition">
+                <img id="nav-muse-avatar" src="" alt="Muse" class="w-6 h-6 rounded-full object-cover">
+                <span id="nav-muse-name" class="text-xs font-bold max-w-[95px] truncate">Jace Vance</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-ios-gray"></i>
+            </button>
+
+            <!-- Theme Toggle Button -->
+            <button onclick="toggleTheme()" aria-label="Toggle Theme" class="w-8 h-8 rounded-full bg-slate-200/80 dark:bg-ios-elevatedDark hairline-all flex items-center justify-center text-slate-700 dark:text-amber-400 active:scale-90 transition">
+                <i id="theme-icon" data-lucide="sun" class="w-4 h-4"></i>
+            </button>
+        </header>
+
+        <!-- ==================== MAIN CONTENT VIEWPORT ==================== -->
+        <main id="viewport" class="flex-1 overflow-y-auto no-scrollbar pb-28">
+
+            <!-- ==================== TAB 1: BERANDA (TIMELINE) ==================== -->
+            <section id="view-timeline" class="hidden divide-y divide-neutral-200/70 dark:divide-neutral-800/80">
+                
+                <!-- Horizontal RP Stories / Active Muse Status -->
+                <div class="py-3 px-4 bg-ios-surfaceLight dark:bg-ios-bgDark">
+                    <div id="stories-bar" class="flex items-center gap-3.5 overflow-x-auto no-scrollbar">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- Quick Compose Box -->
+                <div class="p-4 bg-ios-surfaceLight dark:bg-ios-bgDark">
+                    <div class="flex gap-3">
+                        <img id="compose-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-full object-cover shrink-0 ring-1 ring-black/10 dark:ring-white/10">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <span id="compose-name" class="text-xs font-bold">Jace Vance</span>
+                                <!-- IC / OOC Mode Pill Switch -->
+                                <div class="inline-flex p-0.5 rounded-full bg-slate-100 dark:bg-ios-elevatedDark hairline-all">
+                                    <button onclick="setPostMode('IC')" id="compose-mode-ic" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-ios-blue text-white transition">
+                                        [IC] In-Character
+                                    </button>
+                                    <button onclick="setPostMode('OOC')" id="compose-mode-ooc" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-ios-gray transition">
+                                        [OOC]
+                                    </button>
+                                </div>
+                            </div>
+
+                            <textarea id="compose-text" rows="2" placeholder="Tulis narasi peran, dialog, atau update plot..." class="w-full bg-transparent text-[13.5px] leading-snug resize-none focus:outline-none placeholder:text-ios-gray"></textarea>
+
+                            <!-- Selected Image Preview -->
+                            <div id="compose-img-preview" class="hidden relative mt-2 rounded-2xl overflow-hidden hairline-all">
+                                <img id="compose-img-el" src="" class="w-full h-36 object-cover" alt="Attachment">
+                                <button onclick="clearPostImage()" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center">
+                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+
+                            <!-- Preset Aesthetic Image Attachments & Submit -->
+                            <div class="flex items-center justify-between mt-2.5 pt-2 hairline-t">
+                                <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                                    <span class="text-[10px] text-ios-gray font-medium mr-0.5">Foto:</span>
+                                    <button onclick="attachPresetImg('cafe')" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-ios-elevatedDark text-[10px] font-semibold hover:opacity-80 transition">☕ Cafe</button>
+                                    <button onclick="attachPresetImg('city')" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-ios-elevatedDark text-[10px] font-semibold hover:opacity-80 transition">🌃 Night</button>
+                                    <button onclick="attachPresetImg('stage')" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-ios-elevatedDark text-[10px] font-semibold hover:opacity-80 transition">🎸 Stage</button>
+                                    <button onclick="attachPresetImg('car')" class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-ios-elevatedDark text-[10px] font-semibold hover:opacity-80 transition">🏎️ Luxury</button>
+                                </div>
+
+                                <button onclick="publishPost()" class="px-4 py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black text-xs font-extrabold active:scale-95 transition shrink-0 ml-2">
+                                    Post
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feed Filter Sub-bar -->
+                <div class="px-4 py-2 bg-ios-bgLight/60 dark:bg-ios-surfaceDark flex items-center gap-2 text-[11px] font-bold">
+                    <button onclick="filterFeed('ALL')" id="feed-tab-ALL" class="px-3 py-1 rounded-full bg-slate-900 text-white dark:bg-white dark:text-black transition">For You</button>
+                    <button onclick="filterFeed('IC')" id="feed-tab-IC" class="px-3 py-1 rounded-full text-ios-gray hover:text-current transition">In-Character Only</button>
+                    <button onclick="filterFeed('OOC')" id="feed-tab-OOC" class="px-3 py-1 rounded-full text-ios-gray hover:text-current transition">Out-of-Character</button>
+                </div>
+
+                <!-- Posts Stream -->
+                <div id="feed-stream" class="divide-y divide-neutral-200/70 dark:divide-neutral-800/80 bg-ios-surfaceLight dark:bg-ios-bgDark">
+                    <!-- Rendered via JS -->
+                </div>
+            </section>
+
+            <!-- ==================== TAB 2: NOTIFIKASI (BASE & INTERAKSI RP) ==================== -->
+            <section id="view-base" class="hidden p-4 space-y-3.5">
+                <!-- Base Hero Card -->
+                <div class="relative overflow-hidden rounded-3xl p-4 bg-gradient-to-br from-neutral-900 via-indigo-950 to-purple-950 text-white border border-white/10 shadow-lg">
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div>
+                            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-bold tracking-wider uppercase mb-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-ios-gold"></span>
+                                NOTIFIKASI & BASE
+                            </div>
+                            <h2 class="text-lg font-extrabold tracking-tight">Aktivitas & Plot Board</h2>
+                            <p class="text-xs text-white/70 mt-0.5">Notifikasi interaksi karakter & menfess komunitas.</p>
+                        </div>
+                        <button onclick="openMenfessSheet()" class="px-3.5 py-2.5 rounded-2xl bg-white text-black font-extrabold text-xs shadow-md active:scale-95 transition flex items-center gap-1.5">
+                            <i data-lucide="pen-square" class="w-3.5 h-3.5"></i>
+                            <span>Menfess</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent RP Activity Alerts -->
+                <div class="p-3 rounded-2xl bg-ios-surfaceLight dark:bg-ios-elevatedDark hairline-all space-y-2.5">
+                    <p class="text-[11px] font-extrabold text-ios-gray uppercase tracking-wider px-1">Interaksi Terbaru</p>
+                    <div class="flex items-center gap-2.5 text-xs px-1">
+                        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=100&q=80" class="w-8 h-8 rounded-full object-cover" alt="">
+                        <p class="flex-1"><span class="font-bold">Cleo Laurent</span> menyukai postingan <span class="italic">"malam hari di pantai bali"</span> • <span class="text-ios-gray">2m</span></p>
+                    </div>
+                    <div class="flex items-center gap-2.5 text-xs px-1">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="w-8 h-8 rounded-full object-cover" alt="">
+                        <p class="flex-1"><span class="font-bold">Sora Takahashi</span> mengirim permintaan teman RP • <span class="text-ios-gray">15m</span></p>
+                    </div>
+                </div>
+
+                <!-- Filter Chips -->
+                <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                    <button onclick="setMenfessFilter('ALL')" class="mf-chip px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-white dark:text-black shrink-0 transition">All</button>
+                    <button onclick="setMenfessFilter('#OpenPlot')" class="mf-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-ios-elevatedDark text-ios-gray hairline-all shrink-0 transition">#OpenPlot</button>
+                    <button onclick="setMenfessFilter('#NeedAgency')" class="mf-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-ios-elevatedDark text-ios-gray hairline-all shrink-0 transition">#NeedAgency</button>
+                    <button onclick="setMenfessFilter('#Fambest')" class="mf-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-ios-elevatedDark text-ios-gray hairline-all shrink-0 transition">#Fambest</button>
+                    <button onclick="setMenfessFilter('#Menfess')" class="mf-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-ios-elevatedDark text-ios-gray hairline-all shrink-0 transition">#Menfess</button>
+                </div>
+
+                <!-- Menfess Cards -->
+                <div id="menfess-container" class="space-y-3">
+                    <!-- Rendered via JS -->
+                </div>
+            </section>
+
+            <!-- ==================== TAB 3: CHAT (iMESSAGE STYLE RP CHAT) ==================== -->
+            <section id="view-chat" class="hidden h-full flex flex-col">
+                <!-- Inbox List View -->
+                <div id="chat-list-screen" class="p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-extrabold tracking-tight">Messages</h2>
+                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-ios-blue/10 text-ios-blue">
+                            Muse: <span id="chat-muse-indicator">Jace Vance</span>
+                        </span>
+                    </div>
+
+                    <!-- iOS Search Pill -->
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 text-ios-gray absolute left-3.5 top-2.5"></i>
+                        <input type="text" placeholder="Search characters or agencies" class="w-full bg-slate-200/75 dark:bg-ios-elevatedDark rounded-xl py-2 pl-10 pr-4 text-xs focus:outline-none placeholder:text-ios-gray">
+                    </div>
+
+                    <!-- Conversations -->
+                    <div id="chat-threads-list" class="divide-y divide-neutral-200/60 dark:divide-neutral-800/80 bg-ios-surfaceLight dark:bg-ios-surfaceDark rounded-2xl hairline-all overflow-hidden">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- Active iOS Chat Conversation View -->
+                <div id="chat-detail-screen" class="hidden flex-1 flex flex-col h-full bg-ios-surfaceLight dark:bg-ios-bgDark">
+                    <!-- Chat Top Bar -->
+                    <div class="px-3 py-2 glass-header hairline-b flex items-center justify-between sticky top-0 z-10">
+                        <button onclick="exitChatDetail()" class="flex items-center gap-0.5 text-ios-blue font-semibold text-sm pr-2 py-1 active:opacity-60">
+                            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                            <span>Back</span>
+                        </button>
+
+                        <div class="flex flex-col items-center">
+                            <div class="flex items-center gap-1.5">
+                                <img id="active-chat-avatar" src="" class="w-6 h-6 rounded-full object-cover" alt="">
+                                <span id="active-chat-name" class="text-xs font-extrabold">Sora Takahashi</span>
+                            </div>
+                            <span id="active-chat-sub" class="text-[10px] text-ios-green font-medium">● Online • In-Character</span>
+                        </div>
+
+                        <button onclick="showToast('Plot Notes & Character Sheet dibuka')" class="w-8 h-8 rounded-full flex items-center justify-center text-ios-blue">
+                            <i data-lucide="info" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Messages Scroll Area -->
+                    <div id="chat-bubbles-area" class="flex-1 p-3.5 space-y-2.5 overflow-y-auto min-h-[420px]">
+                        <!-- Bubbles via JS -->
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div id="chat-typing-indicator" class="hidden px-4 py-1.5">
+                        <div class="inline-flex items-center gap-1 px-3.5 py-2.5 rounded-2xl bg-slate-200 dark:bg-ios-elevatedDark">
+                            <span class="w-1.5 h-1.5 rounded-full bg-ios-gray dot-1"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-ios-gray dot-2"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-ios-gray dot-3"></span>
+                        </div>
+                    </div>
+
+                    <!-- iOS Chat Input Bar with [IC] / [OOC] Toggle -->
+                    <div class="p-2.5 glass-header hairline-t flex items-center gap-2">
+                        <button onclick="toggleChatMode()" id="chat-mode-pill" class="px-2.5 py-1.5 rounded-full bg-ios-blue text-white text-[10px] font-extrabold shrink-0 transition">
+                            [IC]
+                        </button>
+                        <div class="flex-1 flex items-center bg-slate-100 dark:bg-ios-elevatedDark hairline-all rounded-full px-3.5 py-1.5">
+                            <input id="chat-input-field" type="text" onkeypress="if(event.key==='Enter') sendMessage()" placeholder="iMessage • Roleplay..." class="w-full bg-transparent text-xs focus:outline-none">
+                        </div>
+                        <button onclick="sendMessage()" class="w-8 h-8 rounded-full bg-ios-blue text-white flex items-center justify-center shrink-0 active:scale-90 transition shadow-sm">
+                            <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 4: PROFIL (SESUAI WIREFRAME GAMBAR 1 & 2) ==================== -->
+            <section id="view-profile" class="px-4 pt-3 pb-6 space-y-5">
+
+                <!-- 1. ROUNDED TOP COVER BANNER + CENTERED OVERLAPPING AVATAR (Gambar 1) -->
+                <div class="relative">
+                    <div class="relative h-40 w-full rounded-[28px] overflow-hidden shadow-md hairline-all bg-neutral-200 dark:bg-neutral-800">
+                        <img id="prof-cover" src="" alt="Cover Banner" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"></div>
+                        <!-- Tombol Edit Profil & Switch Muse di sudut banner -->
+                        <div class="absolute top-3 right-3 flex items-center gap-1.5">
+                            <button onclick="openEditProfileSheet()" class="px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md text-white text-[11px] font-bold border border-white/15 flex items-center gap-1 active:scale-95 transition">
+                                <i data-lucide="pencil" class="w-3 h-3"></i>
+                                <span>Edit</span>
+                            </button>
+                            <button onclick="openMuseSheet()" class="px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md text-white text-[11px] font-bold border border-white/15 flex items-center gap-1 active:scale-95 transition">
+                                <i data-lucide="users" class="w-3 h-3"></i>
+                                <span>Muse</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Centered Overlapping Circular Avatar -->
+                    <div class="relative -mt-14 flex justify-center">
+                        <div class="relative">
+                            <img id="prof-avatar" src="" alt="Profile Avatar" class="w-28 h-28 rounded-full object-cover border-[4px] border-ios-bgLight dark:border-ios-bgDark shadow-xl bg-neutral-300 dark:bg-neutral-800">
+                            <span class="absolute bottom-1.5 right-1.5 w-4 h-4 rounded-full bg-ios-green border-2 border-ios-bgLight dark:border-ios-bgDark"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. CENTERED NAME & BIO (Gambar 1) -->
+                <div class="text-center space-y-1 -mt-2">
+                    <div class="inline-flex items-center justify-center gap-1.5">
+                        <h1 id="prof-name" class="text-[22px] font-extrabold tracking-tight">Kaelen Vance</h1>
+                        <i id="prof-verified-icon" data-lucide="badge-check" class="w-5 h-5 text-ios-gold fill-ios-gold/20"></i>
+                    </div>
+                    <p id="prof-bio" class="text-[13px] text-slate-600 dark:text-neutral-300 max-w-[290px] mx-auto leading-snug">
+                        CEO muda di balik layar kota • FC: Cha Eun-woo • Open for RP plots & mutuals
+                    </p>
+                </div>
+
+                <!-- 3. 3-COLUMN STATS ROW: PENGIKUT | DIIKUTI | TEMAN (Gambar 1) -->
+                <div class="grid grid-cols-3 text-center py-2.5 rounded-2xl bg-ios-surfaceLight dark:bg-ios-elevatedDark hairline-all shadow-2xs">
+                    <div class="space-y-0.5">
+                        <div class="text-xs font-semibold text-ios-gray">pengikut</div>
+                        <div id="prof-stat-followers" class="text-[17px] font-extrabold tracking-tight">100</div>
+                    </div>
+                    <div class="space-y-0.5 border-x border-neutral-200/70 dark:border-neutral-800">
+                        <div class="text-xs font-semibold text-ios-gray">diikuti</div>
+                        <div id="prof-stat-following" class="text-[17px] font-extrabold tracking-tight">2826</div>
+                    </div>
+                    <div class="space-y-0.5">
+                        <div class="text-xs font-semibold text-ios-gray">teman</div>
+                        <div id="prof-stat-friends" class="text-[17px] font-extrabold tracking-tight">736</div>
+                    </div>
+                </div>
+
+                <!-- 4. LEFT-ALIGNED 3-LINE WORKAT / ROLE LIST (Gambar 1) -->
+                <div id="prof-workat-list" class="space-y-1.5 px-1 text-left">
+                    <!-- Rendered via JS: 3 baris workat/agency -->
+                </div>
+
+                <!-- 5. 3 VERTICAL ROUNDED HIGHLIGHT CARDS: LONDON | ME | GIRL FRIENDS (Gambar 2) -->
+                <div class="pt-1">
+                    <div id="prof-highlights-grid" class="grid grid-cols-3 gap-2.5">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- 6. INLINE 'BUAT POSTINGAN' BAR (Gambar 2) -->
+                <div class="flex items-center gap-2.5 pt-1">
+                    <img id="prof-mini-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-full object-cover shrink-0 hairline-all">
+                    <button onclick="openProfilePostSheet()" class="flex-1 text-left px-4 py-2.5 rounded-full bg-slate-200/90 dark:bg-ios-elevatedDark hover:opacity-85 active:scale-[0.99] transition hairline-all">
+                        <span class="text-[13px] font-semibold text-slate-600 dark:text-neutral-300">buat postingan</span>
+                    </button>
+                </div>
+
+                <!-- 7. PROFILE FEED POSTS STREAM (Gambar 2: Avatar + ur name + green music + caption + large media + like/komen/repost/share) -->
+                <div id="profile-posts-list" class="space-y-4 pt-1">
+                    <!-- Rendered via JS -->
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- ==================== FLOATING PILL BOTTOM NAVIGATION BAR (Gambar 1 & 2) ==================== -->
+        <nav class="shrink-0 z-30 px-3.5 pb-4 pt-1.5 bg-gradient-to-t from-ios-bgLight via-ios-bgLight/95 to-transparent dark:from-ios-bgDark dark:via-ios-bgDark/95 dark:to-transparent">
+            <div class="w-full rounded-full bg-slate-300/90 dark:bg-neutral-800/95 backdrop-blur-xl hairline-all shadow-lg px-2 py-2 grid grid-cols-4 items-center text-center">
+                <button onclick="switchMainTab('timeline')" id="tab-btn-timeline" class="py-1.5 rounded-full text-[12.5px] font-bold text-slate-700 dark:text-neutral-300 transition">
+                    beranda
+                </button>
+                <button onclick="switchMainTab('base')" id="tab-btn-base" class="relative py-1.5 rounded-full text-[12.5px] font-bold text-slate-700 dark:text-neutral-300 transition">
+                    notifikasi
+                    <span class="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-ios-pink"></span>
+                </button>
+                <button onclick="switchMainTab('chat')" id="tab-btn-chat" class="relative py-1.5 rounded-full text-[12.5px] font-bold text-slate-700 dark:text-neutral-300 transition">
+                    chat
+                    <span id="unread-nav-badge" class="ml-0.5 inline-flex items-center justify-center px-1.5 py-0.2 rounded-full bg-ios-blue text-white text-[9px] font-extrabold">2</span>
+                </button>
+                <button onclick="switchMainTab('profile')" id="tab-btn-profile" class="py-1.5 rounded-full text-[12.5px] font-extrabold bg-white dark:bg-neutral-950 text-slate-950 dark:text-white shadow-xs transition">
+                    profil
+                </button>
+            </div>
+        </nav>
+
+        <!-- ==================== SHEET: EDIT PROFIL & WORKAT ==================== -->
+        <div id="sheet-edit-profile" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end">
+            <div class="w-full bg-ios-surfaceLight dark:bg-ios-elevatedDark rounded-t-[32px] p-5 pb-8 shadow-2xl hairline-t animate-sheet">
+                <div class="w-10 h-1 bg-neutral-400/40 rounded-full mx-auto mb-3"></div>
+                <div class="flex items-center justify-between mb-3.5">
+                    <h3 class="text-base font-extrabold">Edit Profil Karakter</h3>
+                    <button onclick="closeSheet('sheet-edit-profile')" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-neutral-800 flex items-center justify-center text-ios-gray">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="space-y-2.5 text-xs">
+                    <div>
+                        <label class="font-bold text-ios-gray uppercase text-[10px]">Nama Karakter (ur name)</label>
+                        <input id="edit-prof-name" type="text" class="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hairline-all focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-ios-gray uppercase text-[10px]">Bio Singkat</label>
+                        <input id="edit-prof-bio" type="text" class="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hairline-all focus:outline-none">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="font-bold text-ios-gray uppercase text-[10px]">Daftar Workat / Role (3 Baris)</label>
+                        <input id="edit-workat-1" type="text" placeholder="contoh workat 1" class="w-full px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hairline-all focus:outline-none">
+                        <input id="edit-workat-2" type="text" placeholder="contoh workat 2" class="w-full px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hairline-all focus:outline-none">
+                        <input id="edit-workat-3" type="text" placeholder="contoh workat 3" class="w-full px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hairline-all focus:outline-none">
+                    </div>
+                    <button onclick="saveEditedProfile()" class="w-full py-3 mt-1 rounded-2xl bg-ios-blue text-white font-extrabold text-xs shadow-md active:scale-98 transition">
+                        Simpan Perubahan Profil
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SHEET: BUAT POSTINGAN PROFIL ==================== -->
+        <div id="sheet-profile-post" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end">
+            <div class="w-full bg-ios-surfaceLight dark:bg-ios-elevatedDark rounded-t-[32px] p-5 pb-8 shadow-2xl hairline-t animate-sheet">
+                <div class="w-10 h-1 bg-neutral-400/40 rounded-full mx-auto mb-3"></div>
+                <div class="flex items-center justify-between mb-3.5">
+                    <h3 class="text-base font-extrabold">Buat Postingan Baru</h3>
+                    <button onclick="closeSheet('sheet-profile-post')" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-neutral-800 flex items-center justify-center text-ios-gray">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="font-bold text-ios-gray uppercase text-[10px]">Caption Postingan</label>
+                        <textarea id="new-prof-post-caption" rows="2" placeholder="Contoh: malam hari di pantai bali..." class="w-full mt-1 p-3 rounded-xl bg-slate-100 dark:bg-neutral-800 hairline-all focus:outline-none resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="font-bold text-emerald-500 uppercase text-[10px]">Tag Musik (Music)</label>
+                        <input id="new-prof-post-music" type="text" value="Sunset Lover — Petit Biscuit" class="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hairline-all focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="font-bold text-ios-gray uppercase text-[10px]">Pilih Foto Suasana</label>
+                        <div class="grid grid-cols-4 gap-1.5 mt-1">
+                            <button type="button" onclick="selectProfPhotoPreset('bali')" class="py-1.5 rounded-lg bg-slate-100 dark:bg-neutral-800 font-bold text-[11px] hover:ring-1 ring-ios-blue">🌊 Bali</button>
+                            <button type="button" onclick="selectProfPhotoPreset('london')" class="py-1.5 rounded-lg bg-slate-100 dark:bg-neutral-800 font-bold text-[11px] hover:ring-1 ring-ios-blue">🎡 London</button>
+                            <button type="button" onclick="selectProfPhotoPreset('city')" class="py-1.5 rounded-lg bg-slate-100 dark:bg-neutral-800 font-bold text-[11px] hover:ring-1 ring-ios-blue">🌃 Night</button>
+                            <button type="button" onclick="selectProfPhotoPreset('cafe')" class="py-1.5 rounded-lg bg-slate-100 dark:bg-neutral-800 font-bold text-[11px] hover:ring-1 ring-ios-blue">☕ Cafe</button>
+                        </div>
+                    </div>
+                    <button onclick="submitProfilePost()" class="w-full py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-black font-extrabold text-xs shadow-md">
+                        Posting ke Profil
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SHEET 1: MULTI-MUSE SWITCHER BOTTOM SHEET ==================== -->
+        <div id="sheet-muse" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end">
+            <div class="w-full bg-ios-surfaceLight dark:bg-ios-elevatedDark rounded-t-[32px] p-5 pb-8 shadow-2xl hairline-t animate-sheet">
+                <div class="w-10 h-1 bg-neutral-400/40 rounded-full mx-auto mb-4"></div>
+                <div class="flex items-center justify-between mb-3.5">
+                    <div>
+                        <h3 class="text-base font-extrabold">Switch Active Muse</h3>
+                        <p class="text-xs text-ios-gray">Ganti identitas karakter secara instan</p>
+                    </div>
+                    <button onclick="closeSheet('sheet-muse')" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-neutral-800 flex items-center justify-center text-ios-gray">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div id="muse-list-container" class="space-y-2 max-h-64 overflow-y-auto no-scrollbar mb-3.5">
+                    <!-- Rendered via JS -->
+                </div>
+
+                <button onclick="closeSheet('sheet-muse'); openCreateMuseSheet();" class="w-full py-3 rounded-2xl bg-ios-blue text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-98 transition">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Create New Character</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== SHEET 2: CREATE NEW CHARACTER SHEET ==================== -->
+        <div id="sheet-create-muse" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end">
+            <div class="w-full bg-ios-surfaceLight dark:bg-ios-elevatedDark rounded-t-[32px] p-5 pb-8 shadow-2xl hairline-t animate-sheet">
+                <div class="w-10 h-1 bg-neutral-400/40 rounded-full mx-auto mb-4"></div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-extrabold">New Roleplay Character</h3>
+                    <button onclick="closeSheet('sheet-create-muse')" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-neutral-800 flex items-center justify-center text-ios-gray">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="font-bold text-ios-gray uppercase text-[10px]">Character Name</label>
+                        <input id="new-muse-name" type="text" placeholder="e.g., Damien Thorne" class="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-neutral-800/90 hairline-all focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="font-bold text-ios-gray uppercase text-[10px]">Handle (@)</label>
+                            <input id="new-muse-handle" type="text" placeholder="@damienthorne" class="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-neutral-800/90 hairline-all focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="font-bold text-ios-gray uppercase text-[10px]">Faceclaim (FC)</label>
+                            <input id="new-muse-fc" type="text" placeholder="e.g., Hwang Hyunjin" class="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-neutral-800/90 hairline-all focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="font-bold text-ios-gray uppercase text-[10px]">Character Bio & AU</label>
+                        <textarea id="new-muse-bio" rows="2" placeholder="Ceritakan latar belakang singkat karaktermu..." class="w-full mt-1 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-neutral-800/90 hairline-all focus:outline-none resize-none"></textarea>
+                    </div>
+                    <button onclick="createNewMuse()" class="w-full py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-black font-extrabold text-xs shadow-md active:scale-98 transition">
+                        Save & Activate Character
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SHEET 3: STORY VIEWER MODAL ==================== -->
+        <div id="modal-story" class="hidden absolute inset-0 z-50 bg-black text-white flex flex-col justify-between p-4">
+            <!-- Progress Bar -->
+            <div>
+                <div class="w-full h-1 bg-white/25 rounded-full overflow-hidden mb-3">
+                    <div id="story-progress-bar" class="h-full bg-white w-full transition-all duration-[4000ms] ease-linear"></div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <img id="story-view-avatar" src="" class="w-9 h-9 rounded-full object-cover border border-white/30" alt="">
+                        <div>
+                            <p id="story-view-name" class="text-xs font-extrabold">Sora Takahashi</p>
+                            <p id="story-view-status" class="text-[10px] text-white/75">In-Character • 14m ago</p>
+                        </div>
+                    </div>
+                    <button onclick="closeStoryModal()" class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Story Visual & Caption -->
+            <div class="my-auto relative rounded-3xl overflow-hidden aspect-[9/14] max-h-[540px] w-full bg-neutral-900 border border-white/10">
+                <img id="story-view-img" src="" class="w-full h-full object-cover" alt="Story">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-5">
+                    <p id="story-view-caption" class="text-sm font-medium leading-relaxed"></p>
+                </div>
+            </div>
+
+            <!-- Quick Reply Story -->
+            <div class="flex items-center gap-2 pt-2">
+                <input id="story-reply-input" type="text" placeholder="Reply to character story..." class="flex-1 bg-white/15 backdrop-blur-md rounded-full px-4 py-2.5 text-xs text-white placeholder:text-white/60 focus:outline-none">
+                <button onclick="replyToStory()" class="px-4 py-2.5 rounded-full bg-ios-blue text-white text-xs font-bold">Send</button>
+            </div>
+        </div>
+
+        <!-- ==================== SHEET 4: COMMENT DRAWER ==================== -->
+        <div id="sheet-comments" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end">
+            <div class="w-full bg-ios-surfaceLight dark:bg-ios-elevatedDark rounded-t-[32px] p-5 pb-7 shadow-2xl hairline-t animate-sheet max-h-[75%] flex flex-col">
+                <div class="w-10 h-1 bg-neutral-400/40 rounded-full mx-auto mb-3"></div>
+                <div class="flex items-center justify-between pb-3 hairline-b">
+                    <h3 class="text-sm font-extrabold">Replies</h3>
+                    <button onclick="closeSheet('sheet-comments')" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-neutral-800 flex items-center justify-center text-ios-gray">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div id="comments-drawer-list" class="flex-1 overflow-y-auto no-scrollbar py-3 space-y-3">
+                    <!-- Comments via JS -->
+                </div>
+                <div class="pt-2.5 hairline-t flex items-center gap-2">
+                    <input id="drawer-comment-input" type="text" onkeypress="if(event.key==='Enter') submitDrawerComment()" placeholder="Write a reply as active muse..." class="flex-1 bg-slate-100 dark:bg-neutral-800 rounded-full px-4 py-2 text-xs focus:outline-none">
+                    <button onclick="submitDrawerComment()" class="px-4 py-2 rounded-full bg-ios-blue text-white text-xs font-bold">Reply</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SHEET 5: SEND MENFESS SHEET ==================== -->
+        <div id="sheet-menfess" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end">
+            <div class="w-full bg-ios-surfaceLight dark:bg-ios-elevatedDark rounded-t-[32px] p-5 pb-8 shadow-2xl hairline-t animate-sheet">
+                <div class="w-10 h-1 bg-neutral-400/40 rounded-full mx-auto mb-3"></div>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-extrabold">Post to ROLEPLAYER Base</h3>
+                    <button onclick="closeSheet('sheet-menfess')" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-neutral-800 flex items-center justify-center text-ios-gray">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <select id="mf-tag-select" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-neutral-800 hairline-all font-bold focus:outline-none">
+                        <option value="#OpenPlot">#OpenPlot — Cari Partner Alur Cerita</option>
+                        <option value="#NeedAgency">#NeedAgency — Cari Agensi / Squad</option>
+                        <option value="#Fambest">#Fambest — Cari Relasi Keluarga / Sahabat</option>
+                        <option value="#Menfess">#Menfess — Pesan Anonim Komunitas</option>
+                    </select>
+                    <textarea id="mf-body-input" rows="3" placeholder="Tulis pesan menfess atau kriteria partner plot kamu..." class="w-full p-3.5 rounded-xl bg-slate-100 dark:bg-neutral-800 hairline-all focus:outline-none resize-none"></textarea>
+                    <button onclick="publishMenfess()" class="w-full py-3 rounded-2xl bg-ios-blue text-white font-extrabold text-xs shadow-md">
+                        Publish Menfess
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SHEET 6: VIP PASS STORE SHEET ==================== -->
+        <div id="sheet-vip" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end">
+            <div class="w-full bg-ios-surfaceLight dark:bg-ios-elevatedDark rounded-t-[32px] p-5 pb-8 shadow-2xl hairline-t animate-sheet text-center">
+                <div class="w-10 h-1 bg-neutral-400/40 rounded-full mx-auto mb-4"></div>
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-rose-500 text-white flex items-center justify-center mx-auto mb-2.5 shadow-lg">
+                    <i data-lucide="crown" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-lg font-extrabold">ROLEPLAYER VIP Membership</h3>
+                <p class="text-xs text-ios-gray mt-1">Fitur premium untuk kreator RP & pemilik agensi.</p>
+
+                <div class="my-4 p-3.5 rounded-2xl bg-slate-100 dark:bg-neutral-800/80 text-left space-y-2.5 text-xs">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-ios-green shrink-0"></i>
+                        <span><b>Unlimited Character Slots</b> (Multi-Muse tanpa batas)</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-ios-green shrink-0"></i>
+                        <span><b>Gold Verified Badge</b> eksklusif di profil & timeline</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-ios-green shrink-0"></i>
+                        <span><b>Priority Menfess Pin</b> di papan Base teratas</span>
+                    </div>
+                </div>
+
+                <button onclick="activateVip()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white font-extrabold text-xs shadow-lg active:scale-98 transition">
+                    Activate VIP Pass (Demo Mode)
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== DYNAMIC ISLAND TOAST ==================== -->
+        <div id="toast-pill" class="pointer-events-none opacity-0 -translate-y-2 transition-all duration-300 absolute top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black text-[11px] font-bold shadow-2xl flex items-center gap-2 whitespace-nowrap">
+            <span class="w-2 h-2 rounded-full bg-ios-green"></span>
+            <span id="toast-text">Notification</span>
+        </div>
+
+    </div>
+
+    <script>
+        // ==================== STORAGE KEY & STATE ====================
+        const ROLEPLAYER_STORAGE_KEY = 'roleplayer_state';
+
+        const presetImages = {
+            bali: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+            london: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80',
+            cafe: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=700&q=80',
+            city: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=700&q=80',
+            stage: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=700&q=80',
+            car: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=700&q=80'
+        };
+
+        const muses = [
+            {
+                id: 'm1',
+                name: 'Kaelen Vance',
+                roleTag: 'CEO / Mafia AU',
+                handle: '@kaelen.vance',
+                fc: 'Cha Eun-woo',
+                agency: 'Vanguard Syndicate',
+                verified: 'gold',
+                avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
+                cover: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=900&q=80',
+                bio: 'hanya manusia biasa di kota yang tak pernah tidur • open for plot & mutuals',
+                followers: 100,
+                following: 2826,
+                friends: 736,
+                workat: [
+                    'CEO at ROLEPLAYER Entertainment',
+                    'Model at Seoul Maison Agency',
+                    'Member of Midnight Syndicate'
+                ],
+                highlights: [
+                    {
+                        title: 'london',
+                        cover: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=500&q=80',
+                        caption: 'Musim dingin di London bersama agensi, kenangan tak terlupakan.'
+                    },
+                    {
+                        title: 'me',
+                        cover: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=80',
+                        caption: 'Behind the scenes sesi pemotretan majalah bulan ini.'
+                    },
+                    {
+                        title: 'girl friends',
+                        cover: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=500&q=80',
+                        caption: 'Makan malam bareng bestie satu squad RP!'
+                    }
+                ],
+                profilePosts: [
+                    {
+                        id: 901,
+                        music: 'music • Waves at Midnight',
+                        caption: 'malam hari di pantai bali',
+                        image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                        likes: 142,
+                        liked: false,
+                        commentsCount: 28,
+                        reposts: 14
+                    }
+                ],
+                song: 'After Hours — The Weeknd',
+                postsCount: 48
+            },
+            {
+                id: 'm2',
+                name: 'Sora Takahashi',
+                roleTag: 'Band Guitarist',
+                handle: '@sora.riff',
+                fc: 'Hanni (NewJeans)',
+                agency: 'Midnight Echoes',
+                verified: 'blue',
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+                cover: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=900&q=80',
+                bio: 'lead guitarist • ramen tengah malam & musik indie 90-an',
+                followers: 340,
+                following: 512,
+                friends: 289,
+                workat: [
+                    'Lead Guitarist at Midnight Echoes',
+                    'Barista at Shibuya Drip Cafe',
+                    'Student at Tokyo Art Institute'
+                ],
+                highlights: [
+                    {
+                        title: 'london',
+                        cover: 'https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=crop&w=500&q=80',
+                        caption: 'Tur konser akustik pertama di Inggris.'
+                    },
+                    {
+                        title: 'me',
+                        cover: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80',
+                        caption: 'Latihan studio sampai larut malam.'
+                    },
+                    {
+                        title: 'girl friends',
+                        cover: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=80',
+                        caption: 'Hangout bareng Cleo setelah manggung.'
+                    }
+                ],
+                profilePosts: [
+                    {
+                        id: 902,
+                        music: 'music • 505 Arctic Monkeys',
+                        caption: 'malam hari di pantai bali',
+                        image: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=800&q=80',
+                        likes: 96,
+                        liked: true,
+                        commentsCount: 19,
+                        reposts: 8
+                    }
+                ],
+                song: '505 — Arctic Monkeys',
+                postsCount: 31
+            }
+        ];
+
+        const stories = [
+            {
+                name: 'Sora',
+                status: 'In-Character',
+                ring: 'story-ring-ic',
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                img: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=600&q=80',
+                caption: '*Menyetem gitar di belakang panggung 10 menit sebelum konser dimulai.* "Ada yang datang nonton malam ini?"'
+            },
+            {
+                name: 'Cleo',
+                status: 'Looking for Plot',
+                ring: 'story-ring-plot',
+                avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80',
+                img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80',
+                caption: 'Kopi pagi di Paris terasa hambar tanpa drama baru. DM terbuka untuk plot rival bisnis!'
+            },
+            {
+                name: 'Kael',
+                status: 'In-Character',
+                ring: 'story-ring-ic',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+                img: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=600&q=80',
+                caption: 'Patroli distrik utara selesai. Kota ini tidak pernah benar-benar tidur.'
+            },
+            {
+                name: 'Mina',
+                status: 'Hiatus',
+                ring: 'bg-neutral-500',
+                avatar: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=150&q=80',
+                img: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80',
+                caption: '[OOC] Semi-hiatus ujian minggu ini, slowresp di DM ya!'
+            }
+        ];
+
+        let posts = [
+            {
+                id: 1,
+                name: 'Cleo Laurent',
+                handle: '@cleolaurent',
+                fc: 'Jang Won-young',
+                verified: 'gold',
+                avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80',
+                mode: 'IC',
+                time: '8m',
+                text: '*Meletakkan gelas sampanye di atas meja marmer sambil menatap ke luar jendela lantai 42.* "Semua orang di ruangan ini memakai topeng yang indah, Tuan Vance. Pertanyaannya, siapa yang akan melepasnya lebih dulu?"',
+                image: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=700&q=80',
+                likes: 128,
+                liked: false,
+                reposts: 19,
+                bookmarked: false,
+                comments: [
+                    { user: 'Jace Vance', text: '*Tersenyum tipis dari sudut ruangan.* "Topengku tidak pernah dilepas untuk tamu undangan, Nona Laurent."' }
+                ]
+            },
+            {
+                id: 2,
+                name: 'Sora Takahashi',
+                handle: '@sora.riff',
+                fc: 'Hanni (NewJeans)',
+                verified: 'blue',
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                mode: 'OOC',
+                time: '27m',
+                text: '[OOC] Malam semuanya! Terima kasih yang sudah ikut meramaikan event konser IC tadi malam. Seru banget alurnya, besok kita lanjut arc baru ya! 🎸✨',
+                image: null,
+                likes: 84,
+                liked: true,
+                reposts: 7,
+                bookmarked: true,
+                comments: []
+            }
+        ];
+
+        let menfessItems = [
+            {
+                id: 10,
+                tag: '#OpenPlot',
+                author: 'Cleo Laurent (@cleolaurent)',
+                fc: 'FC: Jang Won-young',
+                avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80',
+                time: '11m ago',
+                text: 'Mencari partner plot bertema "Fake Engagement antara Pewaris Galeri Seni & CEO Mafia". Prefer literate/semi-literate, fastresp, dan suka alur penuh intrik!'
+            },
+            {
+                id: 11,
+                tag: '#NeedAgency',
+                author: 'Anonim • #RP409',
+                fc: 'FC: Lee Know',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+                time: '34m ago',
+                text: 'Halo! Lagi cari agency bertema Dark Academia atau Band/Musik yang aktif bikin event mingguan dan ramah buat member baru. Drop nama agency kalian ya!'
+            },
+            {
+                id: 12,
+                tag: '#Fambest',
+                author: 'Sora Takahashi (@sora.riff)',
+                fc: 'FC: Hanni',
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                time: '1h ago',
+                text: 'Open slot kakak laki-laki atau sahabat satu band buat Sora! Yang suka jbjb di timeline ayo mutualan.'
+            }
+        ];
+
+        let chatThreads = [
+            {
+                id: 'c1',
+                name: 'Cleo Laurent',
+                fc: 'FC: Jang Won-young',
+                status: 'In-Character • Typing...',
+                avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80',
+                unread: 2,
+                time: '9:38 AM',
+                messages: [
+                    { from: 'them', mode: 'IC', text: '*Menyerahkan map rahasia ke atas meja.* "Dokumen lelang malam ini sudah ada di tanganku."', time: '9:35 AM' },
+                    { from: 'me', mode: 'IC', text: '*Menatap isi map tersebut tanpa ekspresi.* "Kerja bagus, Cleo. Pastikan tidak ada jejak yang tertinggal."', time: '9:36 AM' },
+                    { from: 'them', mode: 'IC', text: 'Tentu saja. Sekarang, bagaimana bagian keuntunganku?', time: '9:38 AM' }
+                ]
+            },
+            {
+                id: 'c2',
+                name: 'Sora Takahashi',
+                fc: 'FC: Hanni (NewJeans)',
+                status: 'Online • Ready to Plot',
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                unread: 0,
+                time: 'Yesterday',
+                messages: [
+                    { from: 'them', mode: 'OOC', text: '[OOC] Kak, nanti malam jadi lanjut plot di studio musik kan?', time: 'Yesterday' }
+                ]
+            }
+        ];
+
+        let currentMuseIdx = 0;
+        let currentPostMode = 'IC';
+        let selectedPostImage = null;
+        let currentFeedFilter = 'ALL';
+        let currentMenfessFilter = 'ALL';
+        let activeThreadId = null;
+        let chatInputMode = 'IC';
+        let activeCommentPostId = null;
+        let selectedProfPhoto = presetImages.bali;
+
+        // ==================== INITIALIZATION ====================
+        function init() {
+            syncMuseUI();
+            renderStories();
+            renderFeed();
+            renderMenfess();
+            renderChatList();
+            switchMainTab('profile'); // Default aktif pada tab Profil sesuai gambar wireframe pengguna
+            lucide.createIcons();
+        }
+
+        function syncMuseUI() {
+            const m = muses[currentMuseIdx];
+            document.getElementById('nav-muse-avatar').src = m.avatar;
+            document.getElementById('nav-muse-name').textContent = m.name;
+            document.getElementById('compose-avatar').src = m.avatar;
+            document.getElementById('compose-name').textContent = m.name;
+            document.getElementById('chat-muse-indicator').textContent = m.name;
+
+            // Profile Page (Wireframe Image 1 & 2)
+            document.getElementById('prof-cover').src = m.cover;
+            document.getElementById('prof-avatar').src = m.avatar;
+            document.getElementById('prof-mini-avatar').src = m.avatar;
+            document.getElementById('prof-name').textContent = m.name;
+            document.getElementById('prof-bio').textContent = m.bio;
+            document.getElementById('prof-stat-followers').textContent = m.followers;
+            document.getElementById('prof-stat-following').textContent = m.following;
+            document.getElementById('prof-stat-friends').textContent = m.friends;
+
+            // 3 Baris Workat rata kiri
+            const workatEl = document.getElementById('prof-workat-list');
+            workatEl.innerHTML = m.workat.map(item => `
+                <div class="flex items-center gap-2 text-[14px] font-bold text-slate-800 dark:text-neutral-200">
+                    <i data-lucide="briefcase" class="w-3.5 h-3.5 text-ios-gray shrink-0"></i>
+                    <span>${item}</span>
+                </div>
+            `).join('');
+
+            // 3 Vertical Rounded Highlight Cards: london | me | girl friends
+            const highlightsEl = document.getElementById('prof-highlights-grid');
+            highlightsEl.innerHTML = m.highlights.map((h, idx) => `
+                <button onclick="openHighlightStory(${idx})" class="group flex flex-col items-center focus:outline-none">
+                    <div class="w-full aspect-[3/4.2] rounded-[22px] overflow-hidden bg-neutral-300 dark:bg-neutral-800 hairline-all shadow-sm relative">
+                        <img src="${h.cover}" alt="${h.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent"></div>
+                    </div>
+                    <span class="mt-1.5 text-[13px] font-bold tracking-tight text-slate-800 dark:text-neutral-200">${h.title}</span>
+                </button>
+            `).join('');
+
+            // Profile Posts List (Avatar + ur name + green music + caption + image + like/komen/repost/share)
+            renderProfilePosts();
+            lucide.createIcons();
+        }
+
+        function renderProfilePosts() {
+            const m = muses[currentMuseIdx];
+            const container = document.getElementById('profile-posts-list');
+            container.innerHTML = m.profilePosts.map((post, idx) => `
+                <article class="space-y-2.5 pb-4 hairline-b">
+                    <!-- Post Header: Circular Avatar + ur name + green music -->
+                    <div class="flex items-center gap-2.5">
+                        <img src="${m.avatar}" alt="${m.name}" class="w-10 h-10 rounded-full object-cover shrink-0 hairline-all">
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-[14.5px] font-extrabold leading-tight truncate">${m.name}</h3>
+                            <button onclick="showToast('Memutar: ${post.music}')" class="flex items-center gap-1 text-[12px] font-extrabold text-emerald-500 hover:opacity-80 transition">
+                                <i data-lucide="music" class="w-3 h-3"></i>
+                                <span class="truncate">${post.music}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Caption (e.g., malam hari di pantai bali) -->
+                    <p class="text-[14px] font-semibold text-slate-800 dark:text-neutral-100 leading-snug">
+                        ${post.caption}
+                    </p>
+
+                    <!-- Large Rounded Media Box -->
+                    <div class="w-full aspect-[4/3] rounded-[24px] overflow-hidden bg-neutral-300 dark:bg-neutral-800 hairline-all shadow-sm">
+                        <img src="${post.image}" alt="Post Media" class="w-full h-full object-cover">
+                    </div>
+
+                    <!-- Icon-Only Action Row (No text labels like/komen/repost/share; keeps counters & interactive states) -->
+                    <div class="grid grid-cols-4 pt-1 text-center items-center">
+                        <button onclick="toggleProfPostLike(${idx})" aria-label="Like" class="flex items-center justify-center gap-1.5 py-2 rounded-xl ${post.liked ? 'text-ios-pink' : 'text-slate-700 dark:text-neutral-300'} hover:bg-black/5 dark:hover:bg-white/5 transition">
+                            <svg class="w-5 h-5 ${post.liked ? 'fill-ios-pink animate-heart' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+                            </svg>
+                            ${post.likes > 0 ? `<span class="text-[12.5px] font-bold tabular-nums">${post.likes}</span>` : ''}
+                        </button>
+                        <button onclick="openCommentsDrawer(1)" aria-label="Comment" class="flex items-center justify-center gap-1.5 py-2 rounded-xl text-slate-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/5 transition">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+                            </svg>
+                            ${post.commentsCount > 0 ? `<span class="text-[12.5px] font-bold tabular-nums">${post.commentsCount}</span>` : ''}
+                        </button>
+                        <button onclick="repostProfPost(${idx})" aria-label="Repost" class="flex items-center justify-center gap-1.5 py-2 rounded-xl ${post.reposted ? 'text-ios-green' : 'text-slate-700 dark:text-neutral-300'} hover:bg-black/5 dark:hover:bg-white/5 transition">
+                            <svg class="w-5 h-5 ${post.reposted ? 'stroke-[2.4]' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="m17 2 4 4-4 4"></path>
+                                <path d="M3 11v-1a4 4 0 0 1 4-4h14"></path>
+                                <path d="m7 22-4-4 4-4"></path>
+                                <path d="M21 13v1a4 4 0 0 1-4 4H3"></path>
+                            </svg>
+                            ${post.reposts > 0 ? `<span class="text-[12.5px] font-bold tabular-nums">${post.reposts}</span>` : ''}
+                        </button>
+                        <button onclick="showToast('Tautan postingan disalin!')" aria-label="Share" class="flex items-center justify-center gap-1.5 py-2 rounded-xl text-slate-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/5 transition">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 15V3"></path>
+                                <path d="m7 8 5-5 5 5"></path>
+                                <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </article>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function toggleProfPostLike(idx) {
+            const post = muses[currentMuseIdx].profilePosts[idx];
+            post.liked = !post.liked;
+            post.likes += post.liked ? 1 : -1;
+            renderProfilePosts();
+        }
+
+        function repostProfPost(idx) {
+            const post = muses[currentMuseIdx].profilePosts[idx];
+            post.reposted = !post.reposted;
+            post.reposts += post.reposted ? 1 : -1;
+            renderProfilePosts();
+            showToast(post.reposted ? 'Berhasil di-repost ke Beranda!' : 'Repost dibatalkan');
+        }
+
+        function toggleProfPostLike(idx) {
+            const post = muses[currentMuseIdx].profilePosts[idx];
+            post.liked = !post.liked;
+            post.likes += post.liked ? 1 : -1;
+            renderProfilePosts();
+        }
+
+        function repostProfPost(idx) {
+            const post = muses[currentMuseIdx].profilePosts[idx];
+            post.reposts += 1;
+            showToast('Berhasil di-repost ke Beranda!');
+        }
+
+        function openHighlightStory(idx) {
+            const m = muses[currentMuseIdx];
+            const h = m.highlights[idx];
+            document.getElementById('story-view-avatar').src = m.avatar;
+            document.getElementById('story-view-name').textContent = `${m.name} • ${h.title}`;
+            document.getElementById('story-view-status').textContent = 'Highlight Album';
+            document.getElementById('story-view-img').src = h.cover;
+            document.getElementById('story-view-caption').textContent = h.caption;
+            document.getElementById('modal-story').classList.remove('hidden');
+        }
+
+        function openEditProfileSheet() {
+            const m = muses[currentMuseIdx];
+            document.getElementById('edit-prof-name').value = m.name;
+            document.getElementById('edit-prof-bio').value = m.bio;
+            document.getElementById('edit-workat-1').value = m.workat[0] || '';
+            document.getElementById('edit-workat-2').value = m.workat[1] || '';
+            document.getElementById('edit-workat-3').value = m.workat[2] || '';
+            document.getElementById('sheet-edit-profile').classList.remove('hidden');
+        }
+
+        function saveEditedProfile() {
+            const m = muses[currentMuseIdx];
+            const newName = document.getElementById('edit-prof-name').value.trim();
+            const newBio = document.getElementById('edit-prof-bio').value.trim();
+            if (newName) m.name = newName;
+            if (newBio) m.bio = newBio;
+            m.workat = [
+                document.getElementById('edit-workat-1').value.trim() || 'contoh workat',
+                document.getElementById('edit-workat-2').value.trim() || 'contoh workat',
+                document.getElementById('edit-workat-3').value.trim() || 'contoh workat'
+            ];
+            syncMuseUI();
+            closeSheet('sheet-edit-profile');
+            showToast('Profil karakter diperbarui!');
+        }
+
+        function openProfilePostSheet() {
+            document.getElementById('sheet-profile-post').classList.remove('hidden');
+        }
+
+        function selectProfPhotoPreset(key) {
+            selectedProfPhoto = presetImages[key];
+            showToast(`Foto ${key} dipilih`);
+        }
+
+        function submitProfilePost() {
+            const caption = document.getElementById('new-prof-post-caption').value.trim() || 'malam hari di pantai bali';
+            const musicRaw = document.getElementById('new-prof-post-music').value.trim() || 'Sunset Lover';
+            const m = muses[currentMuseIdx];
+            m.profilePosts.unshift({
+                id: Date.now(),
+                music: musicRaw.startsWith('music') ? musicRaw : `music • ${musicRaw}`,
+                caption: caption,
+                image: selectedProfPhoto,
+                likes: 1,
+                liked: true,
+                commentsCount: 0,
+                reposts: 0
+            });
+            document.getElementById('new-prof-post-caption').value = '';
+            closeSheet('sheet-profile-post');
+            renderProfilePosts();
+            showToast('Postingan baru diterbitkan di profil!');
+        }
+
+        // ==================== NAVIGATION & THEME ====================
+        function switchMainTab(tab) {
+            ['timeline', 'base', 'chat', 'profile'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${t}`);
+                btn.classList.remove('bg-white', 'dark:bg-neutral-950', 'text-slate-950', 'dark:text-white', 'shadow-xs', 'font-extrabold');
+                btn.classList.add('text-slate-700', 'dark:text-neutral-300', 'font-bold');
+            });
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            const active = document.getElementById(`tab-btn-${tab}`);
+            active.classList.remove('text-slate-700', 'dark:text-neutral-300', 'font-bold');
+            active.classList.add('bg-white', 'dark:bg-neutral-950', 'text-slate-950', 'dark:text-white', 'shadow-xs', 'font-extrabold');
+            document.getElementById('viewport').scrollTop = 0;
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.setAttribute('data-lucide', 'moon');
+                showToast('Light Mode Activated');
+            } else {
+                html.classList.add('dark');
+                icon.setAttribute('data-lucide', 'sun');
+                showToast('Dark Mode Activated');
+            }
+            lucide.createIcons();
+        }
+
+        // ==================== STORIES ====================
+        function renderStories() {
+            const bar = document.getElementById('stories-bar');
+            bar.innerHTML = stories.map((s, i) => `
+                <button onclick="openStory(${i})" class="flex flex-col items-center gap-1.5 shrink-0 group">
+                    <div class="p-[2.5px] rounded-full ${s.ring} group-active:scale-90 transition">
+                        <div class="p-[2px] rounded-full bg-ios-surfaceLight dark:bg-ios-bgDark">
+                            <img src="${s.avatar}" alt="${s.name}" class="w-14 h-14 rounded-full object-cover">
+                        </div>
+                    </div>
+                    <span class="text-[11px] font-semibold tracking-tight">${s.name}</span>
+                </button>
+            `).join('');
+        }
+
+        function openStory(idx) {
+            const s = stories[idx];
+            document.getElementById('story-view-avatar').src = s.avatar;
+            document.getElementById('story-view-name').textContent = s.name;
+            document.getElementById('story-view-status').textContent = `${s.status} • Just now`;
+            document.getElementById('story-view-img').src = s.img;
+            document.getElementById('story-view-caption').textContent = s.caption;
+            document.getElementById('modal-story').classList.remove('hidden');
+        }
+
+        function closeStoryModal() {
+            document.getElementById('modal-story').classList.add('hidden');
+        }
+
+        function replyToStory() {
+            const input = document.getElementById('story-reply-input');
+            if (!input.value.trim()) return;
+            input.value = '';
+            closeStoryModal();
+            showToast('Story reply sent via DM!');
+        }
+
+        // ==================== TIMELINE & POSTING ====================
+        function setPostMode(mode) {
+            currentPostMode = mode;
+            const icBtn = document.getElementById('compose-mode-ic');
+            const oocBtn = document.getElementById('compose-mode-ooc');
+            if (mode === 'IC') {
+                icBtn.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-ios-blue text-white transition';
+                oocBtn.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold text-ios-gray transition';
+            } else {
+                oocBtn.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-ios-purple text-white transition';
+                icBtn.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold text-ios-gray transition';
+            }
+        }
+
+        function attachPresetImg(key) {
+            selectedPostImage = presetImages[key];
+            document.getElementById('compose-img-el').src = selectedPostImage;
+            document.getElementById('compose-img-preview').classList.remove('hidden');
+        }
+
+        function clearPostImage() {
+            selectedPostImage = null;
+            document.getElementById('compose-img-preview').classList.add('hidden');
+        }
+
+        function publishPost() {
+            const textarea = document.getElementById('compose-text');
+            const text = textarea.value.trim();
+            if (!text && !selectedPostImage) {
+                showToast('Tulis sesuatu untuk diposting!');
+                return;
+            }
+            const m = muses[currentMuseIdx];
+            posts.unshift({
+                id: Date.now(),
+                name: m.name,
+                handle: m.handle,
+                fc: m.fc,
+                verified: m.verified,
+                avatar: m.avatar,
+                mode: currentPostMode,
+                time: 'Now',
+                text: text,
+                image: selectedPostImage,
+                likes: 0,
+                liked: false,
+                reposts: 0,
+                bookmarked: false,
+                comments: []
+            });
+            m.postsCount += 1;
+            syncMuseUI();
+            textarea.value = '';
+            clearPostImage();
+            renderFeed();
+            showToast(`Posted as ${m.name} [${currentPostMode}]`);
+        }
+
+        function filterFeed(filter) {
+            currentFeedFilter = filter;
+            ['ALL', 'IC', 'OOC'].forEach(f => {
+                const btn = document.getElementById(`feed-tab-${f}`);
+                btn.className = f === filter
+                    ? 'px-3 py-1 rounded-full bg-slate-900 text-white dark:bg-white dark:text-black transition'
+                    : 'px-3 py-1 rounded-full text-ios-gray hover:text-current transition';
+            });
+            renderFeed();
+        }
+
+        function renderFeed() {
+            const stream = document.getElementById('feed-stream');
+            const list = currentFeedFilter === 'ALL' ? posts : posts.filter(p => p.mode === currentFeedFilter);
+
+            stream.innerHTML = list.map(p => `
+                <article class="p-4 transition hover:bg-black/[0.015] dark:hover:bg-white/[0.015]">
+                    <div class="flex gap-3">
+                        <img src="${p.avatar}" alt="${p.name}" class="w-10 h-10 rounded-full object-cover shrink-0 ring-1 ring-black/10 dark:ring-white/10">
+                        <div class="flex-1 min-w-0">
+                            <!-- Header Row -->
+                            <div class="flex items-center justify-between gap-1">
+                                <div class="flex items-center gap-1 min-w-0">
+                                    <span class="text-[13.5px] font-extrabold truncate">${p.name}</span>
+                                    <i data-lucide="badge-check" class="w-3.5 h-3.5 shrink-0 ${p.verified === 'gold' ? 'text-ios-gold fill-ios-gold/20' : 'text-ios-blue fill-ios-blue/20'}"></i>
+                                    <span class="text-xs text-ios-gray truncate">${p.handle}</span>
+                                </div>
+                                <span class="text-[11px] text-ios-gray shrink-0">${p.time}</span>
+                            </div>
+
+                            <!-- FC & Mode Pill -->
+                            <div class="flex items-center gap-1.5 mt-0.5 mb-2">
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold ${p.mode === 'IC' ? 'bg-ios-blue/10 text-ios-blue' : 'bg-ios-purple/10 text-ios-purple'}">
+                                    [${p.mode}]
+                                </span>
+                                <span class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-ios-elevatedDark text-[10px] font-semibold text-ios-gray">
+                                    FC: ${p.fc}
+                                </span>
+                            </div>
+
+                            <!-- Post Body -->
+                            <p class="text-[13.5px] leading-relaxed whitespace-pre-line text-slate-800 dark:text-neutral-100">${formatNarration(p.text)}</p>
+
+                            <!-- Post Image -->
+                            ${p.image ? `
+                                <div class="mt-2.5 rounded-2xl overflow-hidden hairline-all">
+                                    <img src="${p.image}" alt="Media" class="w-full max-h-60 object-cover">
+                                </div>
+                            ` : ''}
+
+                            <!-- Interactive Action Row -->
+                            <div class="flex items-center justify-between mt-3 pt-1 text-ios-gray max-w-[290px]">
+                                <button onclick="toggleLikePost(${p.id})" class="flex items-center gap-1.5 text-xs ${p.liked ? 'text-ios-pink font-bold' : 'hover:text-ios-pink'} transition">
+                                    <i data-lucide="heart" class="w-4 h-4 ${p.liked ? 'fill-ios-pink animate-heart' : ''}"></i>
+                                    <span>${p.likes}</span>
+                                </button>
+                                <button onclick="openCommentsDrawer(${p.id})" class="flex items-center gap-1.5 text-xs hover:text-ios-blue transition">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                    <span>${p.comments.length}</span>
+                                </button>
+                                <button onclick="repostItem(${p.id})" class="flex items-center gap-1.5 text-xs hover:text-ios-green transition">
+                                    <i data-lucide="repeat-2" class="w-4 h-4"></i>
+                                    <span>${p.reposts}</span>
+                                </button>
+                                <button onclick="toggleBookmark(${p.id})" class="flex items-center text-xs ${p.bookmarked ? 'text-ios-gold' : 'hover:text-ios-gold'} transition">
+                                    <i data-lucide="bookmark" class="w-4 h-4 ${p.bookmarked ? 'fill-ios-gold' : ''}"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function formatNarration(str) {
+            return str.replace(/\*(.*?)\*/g, '<em class="text-slate-500 dark:text-neutral-400">*$1*</em>');
+        }
+
+        function toggleLikePost(id) {
+            const p = posts.find(x => x.id === id);
+            if (!p) return;
+            p.liked = !p.liked;
+            p.likes += p.liked ? 1 : -1;
+            renderFeed();
+        }
+
+        function repostItem(id) {
+            const p = posts.find(x => x.id === id);
+            if (!p) return;
+            p.reposts += 1;
+            renderFeed();
+            showToast('Reposted to your character feed!');
+        }
+
+        function toggleBookmark(id) {
+            const p = posts.find(x => x.id === id);
+            if (!p) return;
+            p.bookmarked = !p.bookmarked;
+            renderFeed();
+            showToast(p.bookmarked ? 'Saved to Plot Bookmarks' : 'Removed from Bookmarks');
+        }
+
+        // ==================== COMMENT DRAWER ====================
+        function openCommentsDrawer(postId) {
+            activeCommentPostId = postId;
+            renderDrawerComments();
+            document.getElementById('sheet-comments').classList.remove('hidden');
+        }
+
+        function renderDrawerComments() {
+            const p = posts.find(x => x.id === activeCommentPostId);
+            const list = document.getElementById('comments-drawer-list');
+            if (!p || p.comments.length === 0) {
+                list.innerHTML = `<p class="text-center text-xs text-ios-gray py-8">Belum ada balasan. Mulai interaksi karaktermu!</p>`;
+                return;
+            }
+            list.innerHTML = p.comments.map(c => `
+                <div class="p-3 rounded-2xl bg-slate-100 dark:bg-neutral-800/80 text-xs">
+                    <span class="font-extrabold block mb-0.5">${c.user}</span>
+                    <p class="text-slate-700 dark:text-neutral-300 leading-relaxed">${formatNarration(c.text)}</p>
+                </div>
+            `).join('');
+        }
+
+        function submitDrawerComment() {
+            const input = document.getElementById('drawer-comment-input');
+            const text = input.value.trim();
+            if (!text) return;
+            const p = posts.find(x => x.id === activeCommentPostId);
+            if (p) {
+                p.comments.push({ user: muses[currentMuseIdx].name, text });
+                input.value = '';
+                renderDrawerComments();
+                renderFeed();
+            }
+        }
+
+        // ==================== BASE & PLOT (MENFESS) ====================
+        function setMenfessFilter(tag) {
+            currentMenfessFilter = tag;
+            document.querySelectorAll('.mf-chip').forEach(btn => {
+                const isSelected = btn.textContent.trim() === tag;
+                btn.className = isSelected
+                    ? 'mf-chip px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-white dark:text-black shrink-0 transition'
+                    : 'mf-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-ios-elevatedDark text-ios-gray hairline-all shrink-0 transition';
+            });
+            renderMenfess();
+        }
+
+        function renderMenfess() {
+            const container = document.getElementById('menfess-container');
+            const list = currentMenfessFilter === 'ALL'
+                ? menfessItems
+                : menfessItems.filter(m => m.tag === currentMenfessFilter);
+
+            container.innerHTML = list.map(m => `
+                <div class="p-4 rounded-3xl bg-ios-surfaceLight dark:bg-ios-elevatedDark hairline-all shadow-xs space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-0.5 rounded-full bg-ios-blue/10 text-ios-blue text-[11px] font-extrabold">${m.tag}</span>
+                        <span class="text-[11px] text-ios-gray">${m.time}</span>
+                    </div>
+                    <p class="text-[13px] leading-relaxed text-slate-800 dark:text-neutral-100">${m.text}</p>
+                    <div class="pt-2.5 hairline-t flex items-center justify-between">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <img src="${m.avatar}" class="w-6 h-6 rounded-full object-cover" alt="">
+                            <div class="truncate">
+                                <p class="text-[11px] font-bold truncate">${m.author}</p>
+                                <p class="text-[9px] text-ios-gray">${m.fc}</p>
+                            </div>
+                        </div>
+                        <button onclick="jumpToPlotDM('${m.author}', '${m.avatar}', '${m.fc}')" class="px-3 py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black text-[11px] font-extrabold flex items-center gap-1 shrink-0 active:scale-95 transition">
+                            <i data-lucide="send" class="w-3 h-3"></i>
+                            <span>DM for Plot</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function openMenfessSheet() {
+            document.getElementById('sheet-menfess').classList.remove('hidden');
+        }
+
+        function publishMenfess() {
+            const tag = document.getElementById('mf-tag-select').value;
+            const text = document.getElementById('mf-body-input').value.trim();
+            if (!text) return;
+            const m = muses[currentMuseIdx];
+            menfessItems.unshift({
+                id: Date.now(),
+                tag,
+                author: `${m.name} (${m.handle})`,
+                fc: `FC: ${m.fc}`,
+                avatar: m.avatar,
+                time: 'Just now',
+                text
+            });
+            document.getElementById('mf-body-input').value = '';
+            closeSheet('sheet-menfess');
+            renderMenfess();
+            showToast('Menfess published to Base!');
+        }
+
+        function jumpToPlotDM(authorName, avatar, fc) {
+            const cleanName = authorName.split(' (')[0];
+            let thread = chatThreads.find(t => t.name === cleanName);
+            if (!thread) {
+                thread = {
+                    id: 'c-' + Date.now(),
+                    name: cleanName,
+                    fc: fc,
+                    status: 'Online • Ready to Plot',
+                    avatar: avatar,
+                    unread: 0,
+                    time: 'Now',
+                    messages: [
+                        { from: 'me', mode: 'OOC', text: 'Halo! Aku tertarik dengan menfess plot kamu di ROLEPLAYER Base.', time: 'Now' }
+                    ]
+                };
+                chatThreads.unshift(thread);
+            }
+            switchMainTab('chat');
+            openChatDetail(thread.id);
+        }
+
+        // ==================== iOS CHAT SYSTEM ====================
+        function renderChatList() {
+            const list = document.getElementById('chat-threads-list');
+            const totalUnread = chatThreads.reduce((acc, t) => acc + t.unread, 0);
+            const badge = document.getElementById('unread-nav-badge');
+            badge.textContent = totalUnread;
+            badge.style.display = totalUnread > 0 ? 'flex' : 'none';
+
+            list.innerHTML = chatThreads.map(t => {
+                const last = t.messages[t.messages.length - 1];
+                return `
+                    <button onclick="openChatDetail('${t.id}')" class="w-full p-3.5 flex items-center gap-3 text-left hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition">
+                        <div class="relative shrink-0">
+                            <img src="${t.avatar}" class="w-12 h-12 rounded-full object-cover" alt="${t.name}">
+                            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-ios-green border-2 border-ios-surfaceLight dark:border-ios-surfaceDark"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-extrabold truncate">${t.name}</span>
+                                <span class="text-[11px] text-ios-gray">${t.time}</span>
+                            </div>
+                            <p class="text-[10px] text-ios-blue font-semibold">${t.status}</p>
+                            <p class="text-xs text-ios-gray truncate mt-0.5">${last ? last.text : ''}</p>
+                        </div>
+                        ${t.unread > 0 ? `<span class="w-5 h-5 rounded-full bg-ios-blue text-white text-[10px] font-extrabold flex items-center justify-center shrink-0">${t.unread}</span>` : ''}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function openChatDetail(id) {
+            activeThreadId = id;
+            const t = chatThreads.find(x => x.id === id);
+            t.unread = 0;
+            renderChatList();
+
+            document.getElementById('chat-list-screen').classList.add('hidden');
+            document.getElementById('chat-detail-screen').classList.remove('hidden');
+            document.getElementById('active-chat-avatar').src = t.avatar;
+            document.getElementById('active-chat-name').textContent = t.name;
+            document.getElementById('active-chat-sub').textContent = `● ${t.status}`;
+            renderChatBubbles();
+        }
+
+        function exitChatDetail() {
+            activeThreadId = null;
+            document.getElementById('chat-detail-screen').classList.add('hidden');
+            document.getElementById('chat-list-screen').classList.remove('hidden');
+        }
+
+        function toggleChatMode() {
+            chatInputMode = chatInputMode === 'IC' ? 'OOC' : 'IC';
+            const pill = document.getElementById('chat-mode-pill');
+            pill.textContent = `[${chatInputMode}]`;
+            pill.className = chatInputMode === 'IC'
+                ? 'px-2.5 py-1.5 rounded-full bg-ios-blue text-white text-[10px] font-extrabold shrink-0 transition'
+                : 'px-2.5 py-1.5 rounded-full bg-ios-purple text-white text-[10px] font-extrabold shrink-0 transition';
+        }
+
+        function renderChatBubbles() {
+            const t = chatThreads.find(x => x.id === activeThreadId);
+            if (!t) return;
+            const area = document.getElementById('chat-bubbles-area');
+            area.innerHTML = t.messages.map(m => {
+                const isMe = m.from === 'me';
+                return `
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                        <span class="text-[9px] text-ios-gray mb-0.5 px-1.5">[${m.mode}] • ${m.time}</span>
+                        <div class="max-w-[80%] px-3.5 py-2.5 text-[13px] leading-relaxed ${isMe ? 'bg-ios-blue text-white imsg-sent' : 'bg-slate-200/90 dark:bg-ios-elevatedDark text-slate-900 dark:text-white imsg-received'}">
+                            ${formatNarration(m.text)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input-field');
+            const text = input.value.trim();
+            if (!text || !activeThreadId) return;
+
+            const t = chatThreads.find(x => x.id === activeThreadId);
+            const activeMuse = muses[currentMuseIdx];
+            t.messages.push({
+                from: 'me',
+                mode: chatInputMode,
+                text: text,
+                time: '9:41 AM'
+            });
+            t.time = 'Now';
+            input.value = '';
+            renderChatBubbles();
+            renderChatList();
+
+            // Simulated contextual RP auto-reply with typing animation
+            const typing = document.getElementById('chat-typing-indicator');
+            typing.classList.remove('hidden');
+            setTimeout(() => {
+                typing.classList.add('hidden');
+                if (activeThreadId === t.id) {
+                    const replyText = chatInputMode === 'IC'
+                        ? `*Menatap ${activeMuse.name} dengan sorot mata penuh teka-teki.* "Menarik... sepertinya permainan kita baru saja dimulai."`
+                        : `[OOC] Siap! Alurnya cocok banget, gas lanjut scene berikutnya ya! ✨`;
+                    t.messages.push({
+                        from: 'them',
+                        mode: chatInputMode,
+                        text: replyText,
+                        time: '9:41 AM'
+                    });
+                    renderChatBubbles();
+                }
+            }, 1300);
+        }
+
+        // ==================== MULTI-MUSE & BOTTOM SHEETS ====================
+        function openMuseSheet() {
+            const container = document.getElementById('muse-list-container');
+            container.innerHTML = muses.map((m, idx) => `
+                <button onclick="selectMuse(${idx})" class="w-full p-3 rounded-2xl flex items-center justify-between hairline-all transition ${idx === currentMuseIdx ? 'bg-ios-blue/10 border-ios-blue' : 'bg-slate-100/70 dark:bg-neutral-800/70'}">
+                    <div class="flex items-center gap-3 text-left">
+                        <img src="${m.avatar}" class="w-11 h-11 rounded-full object-cover" alt="">
+                        <div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs font-extrabold">${m.name}</span>
+                                <span class="text-[10px] text-ios-gray">— ${m.roleTag}</span>
+                            </div>
+                            <p class="text-[11px] text-ios-gray">${m.handle} • FC: ${m.fc}</p>
+                        </div>
+                    </div>
+                    ${idx === currentMuseIdx ? '<i data-lucide="check-circle-2" class="w-5 h-5 text-ios-blue"></i>' : ''}
+                </button>
+            `).join('');
+            document.getElementById('sheet-muse').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function selectMuse(idx) {
+            currentMuseIdx = idx;
+            syncMuseUI();
+            closeSheet('sheet-muse');
+            showToast(`Switched to ${muses[idx].name}`);
+        }
+
+        function openCreateMuseSheet() {
+            document.getElementById('sheet-create-muse').classList.remove('hidden');
+        }
+
+        function createNewMuse() {
+            const name = document.getElementById('new-muse-name').value.trim();
+            const handle = document.getElementById('new-muse-handle').value.trim() || '@newmuse';
+            const fc = document.getElementById('new-muse-fc').value.trim() || 'Original Character';
+            const bio = document.getElementById('new-muse-bio').value.trim() || 'Ready for new RP adventures on VELVET.';
+
+            if (!name) {
+                showToast('Masukkan nama karakter!');
+                return;
+            }
+
+            muses.push({
+                id: 'm-' + Date.now(),
+                name,
+                roleTag: 'Custom Muse',
+                handle: handle.startsWith('@') ? handle : `@${handle}`,
+                fc,
+                agency: 'Independent RP',
+                verified: 'blue',
+                avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
+                cover: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=800&q=80',
+                bio: bio || 'Ready for new RP adventures on ROLEPLAYER.',
+                song: 'Midnight City — M83',
+                postsCount: 0
+            });
+
+            currentMuseIdx = muses.length - 1;
+            syncMuseUI();
+            document.getElementById('new-muse-name').value = '';
+            document.getElementById('new-muse-handle').value = '';
+            document.getElementById('new-muse-fc').value = '';
+            document.getElementById('new-muse-bio').value = '';
+            closeSheet('sheet-create-muse');
+            showToast(`Created & switched to ${name}!`);
+        }
+
+        function openVipSheet() {
+            document.getElementById('sheet-vip').classList.remove('hidden');
+        }
+
+        function activateVip() {
+            muses[currentMuseIdx].verified = 'gold';
+            syncMuseUI();
+            closeSheet('sheet-vip');
+            showToast('VIP Pass Activated! Gold Badge Unlocked 👑');
+        }
+
+        function toggleThemeSong(btn) {
+            const isPlaying = btn.dataset.playing === 'true';
+            btn.dataset.playing = (!isPlaying).toString();
+            btn.innerHTML = !isPlaying
+                ? '<i data-lucide="pause" class="w-3.5 h-3.5 fill-current"></i>'
+                : '<i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>';
+            lucide.createIcons();
+            showToast(!isPlaying ? 'Playing Character Theme Song...' : 'Paused Theme Song');
+        }
+
+        function closeSheet(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function showToast(msg) {
+            const pill = document.getElementById('toast-pill');
+            document.getElementById('toast-text').textContent = msg;
+            try {
+                localStorage.setItem(ROLEPLAYER_STORAGE_KEY, JSON.stringify({
+                    currentMuseIdx,
+                    posts,
+                    menfessItems,
+                    chatThreads,
+                    lastNotice: msg
+                }));
+            } catch (err) {
+                // Abaikan jika penyimpanan lokal tidak tersedia
+            }
+            pill.classList.remove('opacity-0', '-translate-y-2');
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                pill.classList.add('opacity-0', '-translate-y-2');
+            }, 2200);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
+```
+
